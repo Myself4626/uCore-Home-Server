@@ -1,0 +1,56 @@
+---
+- name: Ensure Tautulli config directory
+  ansible.builtin.file:
+    path: /srv/tautulli/config
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Generate Tautulli Quadlet
+  containers.podman.podman_container:
+    name: tautulli
+    image: "{{ tautulli_image }}"
+    state: quadlet
+    quadlet_filename: "tautulli"
+    publish:
+      - "{{ tautulli_port }}:{{ tautulli_port }}"
+    volumes:
+      - "/srv/tautulli/config:/config:Z"
+    cap_drop: "{{ default_cap_drop }}"
+    cap_add: "{{ default_cap_add | default([]) }}"
+    security_opt: "{{ default_security_opt }}"
+    pids_limit: "{{ default_pids_limit }}"
+    ulimit: "{{ default_ulimits }}"
+    env:
+      TZ: "{{ timezone }}"
+    quadlet_options:
+      - "AutoUpdate=registry"
+      - "Pull=newer"
+      - |
+        [Install]
+        WantedBy=default.target
+  notify: systemd daemon-reload
+  register: tautulli_quadlet
+
+- name: Flush handlers (reload systemd for tautulli)
+  ansible.builtin.meta: flush_handlers
+
+- name: Enable and start tautulli.service (Quadlet)
+  ansible.builtin.service:
+    name: tautulli.service
+    enabled: true
+    state: started
+
+- name: Open firewall for Tautulli
+  ansible.posix.firewalld:
+    port: "{{ tautulli_port }}/tcp"
+    permanent: true
+    immediate: true
+    state: enabled
+
+- name: Ensure podman-auto-update.timer is enabled (for AutoUpdate=registry)
+  ansible.builtin.service:
+    name: podman-auto-update.timer
+    enabled: "{{ enable_podman_auto_update_timer | bool }}"
+    state: "{{ 'started' if enable_podman_auto_update_timer | bool else 'stopped' }}"

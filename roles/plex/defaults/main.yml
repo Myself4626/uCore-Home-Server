@@ -1,0 +1,23 @@
+---
+plex_image: "ghcr.io/plexinc/pms-docker:latest"
+plex_use_host_network: false
+
+plex_tcp_ports: ["32400", "32469"]
+plex_udp_ports: ["1900", "5353", "32410", "32411", "32412", "32413", "32414"]
+
+default_cap_drop: ["ALL"]
+default_cap_add: ["CHOWN", "DAC_OVERRIDE", "FOWNER", "SETGID", "SETUID"]
+default_security_opt: ["no-new-privileges=true"]
+default_pids_limit: 0
+default_ulimits: ["nofile=131072:131072"]
+
+enable_podman_auto_update_timer: true
+
+
+# Users can override these in inventory/group_vars/host_vars as needed.
+plex_use_host_network: false
+
+# Derived publish lists (built from the two lists above)
+plex_publish_tcp: "{{ plex_tcp_ports | map('string') | map('regex_replace', '^(.+)$', '\\1:\\1') | list }}"
+plex_publish_udp: "{{ plex_udp_ports | map('string') | map('regex_replace', '^(.+)$', '\\1:\\1/udp') | list }}"
+plex_publish_all: "{{ plex_publish_tcp + plex_publish_udp }}"

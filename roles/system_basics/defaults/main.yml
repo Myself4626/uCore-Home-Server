@@ -1,0 +1,14 @@
+---
+host_name: "{{ inventory_hostname }}"
+timezone: "America/Chicago"
+nm_interface_name: "eth0"
+
+static_network: false
+static_network_config:
+  address: "192.168.1.50/24"
+  gateway: "192.168.1.1"
+  dns: ["1.1.1.1","9.9.9.9"]
+
+firewall_base_open_tcp:
+  - "22"
+  - "9090"

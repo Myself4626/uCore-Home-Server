@@ -4,38 +4,48 @@
 
 ---
 
-**uHS** is based on an immutable uBlue-uCore home server OS. It follows a container-first model aligned with [PerfectMediaServer](https://perfectmediaserver.com/) principles. The goal is to keep the host minimal, updates atomic, and services reproducible.
+**uHS** is an Ansible deployed home server. It's goal is to make lightweight, reproducible, container-first systems.  
+It’s built on top of [uBlue’s uCore](https://universal-blue.org/ucore/) and uses [PerfectMediaServer](https://perfectmediaserver.com/) principles.
+
+Instead of locking you into an appliance-style NAS, **uHS** focuses on being **simple, transparent, and maintainable**.  
+Disks, containers, and services are all managed directly on the host, without hiding them behind heavy VMs or custom middleware.
 
 ---
 
-## Key features:
-- **Immutable base** — atomic updates and instant rollbacks via `bootc`.
+## What makes it different?
+
+- **Immutable base** – Atomic updates, easy rollback, no update drift.
 - **Standard tooling** — Podman, systemd, and Ansible. No proprietary daemons or custom web frameworks.
-- **Container-first** — services run as OCI containers via systemd quadlets.
-- **Self-documenting configuration** — your configuration lives in an Ansible repo.
+- **Container-first design** – Apps run as containers via Podman + systemd quadlets.  
 - **Flexible storage** — Mix and match to fit your data needs. Btrfs, MergerFS, SnapRAID, and ZFS.
-- **Web & CLI management** — Cockpit for quick tasks, Ansible for full automation.
-- **Hardware-friendly** — runs great on second-hand business desktops or servers.
+- **Automated configuration** – Ansible manages everything, versioned in Git, self-documenting.  
+- **Lightweight management** – Cockpit provides a simple web UI for monitoring, logs, and one-off tasks.  
 
 ---
 
-## Example Uses:
+## What this repo is:
+The **automation layer** for my uCore Home Server: a curated set of Ansible roles and inventories that configure apps and services on top of my uHS OS image. Containers are managed with systemd quadlets for durability and clean lifecycle management.
 
-- NAS with support for bulk, parity-protected storage for files and backups.
-- A small compute node for self-hosted apps (Nextcloud, Immich, Paperless, etc.).
-- Media servers (Plex, Jellyfin, or Emby).
+## What this repo is not:
+This is **not** the OS image builder. Install uBlue/uCore, then switch to the uHS OS image and manage services here. See the [OS](https://github.com/Myself4626/uCore-Home-Server-OS) project for install/bootc image-mode details.
+
+---
+
+## Philosophy:
+
+The project builds on the principles of [Perfect Media Server](https://perfectmediaserver.com/):
+- Use **proven, upstream tools** instead of custom solutions.
+- Keep the design **modular and understandable**.
+- Make it **easy to replace** or rebuild any piece if needed.
 
 ---
 
 ## Getting Started:
 
-1. Install **uCore** on your hardware.
-2. Switch to the uHS-OS image
-3. Clone the [uCore Home Server](https://github.com/Myself4626/uCore-Home-Server) repository.
-4. Configure your server via Ansible.
-5. Access Cockpit to monitor and manage.
-
-> Detailed installation guides are available in the [Wiki](./wiki).
+1. Install **uHS OS** on your hardware.
+2. Clone this [uCore Home Server](https://github.com/Myself4626/uCore-Home-Server) repository.
+3. Configure Ansible to match your host.
+4. Run ansible.
 
 ---
 
@@ -43,11 +53,3 @@
 
 Got an idea for a service, role, or improvement?  
 Open an issue or submit a PR — contributions are welcome!
-
----
-
-## Links:
-- **uCore (base image):** https://github.com/ublue-os/ucore  
-- **bootc switch / image mode:** Red Hat docs for `bootc` (RHEL 9/10)  
-- **Podman Quadlet & systemd generator:** `podman-systemd.unit(5)`, `podman-quadlet(1)`  
-- **PerfectMediaServer overview:** https://perfectmediaserver.com/

@@ -1,0 +1,68 @@
+---
+- name: Ensure Kometa config directory
+  ansible.builtin.file:
+    path: /srv/kometa/config
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Render Kometa config
+  ansible.builtin.template:
+    src: kometa-config.yml.j2
+    dest: /srv/kometa/config/config.yml
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Generate Kometa Quadlet (oneshot)
+  containers.podman.podman_container:
+    name: kometa
+    image: "{{ kometa_image }}"
+    state: quadlet
+    quadlet_filename: "kometa"
+    volumes:
+      - "/srv/kometa/config:/config:Z"
+      - "/var/mnt/media:/media:ro"
+    cap_drop: "{{ default_cap_drop }}"
+    cap_add: "{{ default_cap_add | default([]) }}"
+    security_opt: "{{ default_security_opt }}"
+    pids_limit: "{{ default_pids_limit }}"
+    ulimit: "{{ default_ulimits }}"
+    env:
+      TZ: "{{ timezone }}"
+    quadlet_options:
+      - "AutoUpdate=registry"
+      - "Pull=newer"
+      - |
+        [Install]
+        WantedBy=default.target
+        [Service]
+        Type=oneshot
+  notify: systemd daemon-reload
+  register: kometa_quadlet
+
+- name: Install kometa.timer
+  ansible.builtin.template:
+    src: kometa.timer.j2
+    dest: /etc/systemd/system/kometa.timer
+    owner: root
+    group: root
+    mode: '0644'
+  notify: systemd daemon-reload
+  register: kometa_timer_unit
+
+- name: Flush handlers (reload systemd for kometa + timer)
+  ansible.builtin.meta: flush_handlers
+
+- name: Enable and start kometa.timer
+  ansible.builtin.service:
+    name: kometa.timer
+    enabled: true
+    state: started
+
+- name: Ensure podman-auto-update.timer is enabled (for AutoUpdate=registry)
+  ansible.builtin.service:
+    name: podman-auto-update.timer
+    enabled: "{{ enable_podman_auto_update_timer | bool }}"
+    state: "{{ 'started' if enable_podman_auto_update_timer | bool else 'stopped' }}"

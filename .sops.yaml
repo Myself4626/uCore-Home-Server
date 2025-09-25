@@ -1,0 +1,6 @@
+# Encrypt only keys beginning with "sops_" in group_vars/ and host_vars/ *.sops.yaml
+creation_rules:
+  - path_regex: '(group_vars|host_vars)/.*\.sops\.ya?ml$'
+    encrypted_regex: '^(sops_.*)$'
+    age: >-
+      age1exampleexampleexampleexampleexampleexampleexampleexampleex  # SAFE DEMO VALUE. Replace with your real age recipient.

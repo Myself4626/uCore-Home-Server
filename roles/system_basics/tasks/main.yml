@@ -1,0 +1,39 @@
+---
+- name: Set hostname
+  ansible.builtin.hostname:
+    name: "{{ host_name }}"
+
+- name: Set timezone
+  community.general.timezone:
+    name: "{{ timezone }}"
+
+- name: Ensure firewalld is enabled and running
+  ansible.builtin.service:
+    name: firewalld
+    enabled: true
+    state: started
+
+- name: Open base firewall TCP ports
+  ansible.posix.firewalld:
+    port: "{{ item }}/tcp"
+    permanent: true
+    immediate: true
+    state: enabled
+  loop: "{{ firewall_base_open_tcp }}"
+
+- name: Enable and start cockpit
+  ansible.builtin.service:
+    name: cockpit.service
+    enabled: true
+    state: started
+
+# Optional static networking via NetworkManager keyfile
+- name: Create static NetworkManager connection (when enabled)
+  ansible.builtin.template:
+    src: static-nm-connection.j2
+    dest: "/etc/NetworkManager/system-connections/static-media.nmconnection"
+    owner: root
+    group: root
+    mode: '0600'
+  when: static_network | bool
+  notify: reload NetworkManager

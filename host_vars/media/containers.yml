@@ -1,0 +1,11 @@
+# Images (override if desired)
+
+tautulli_enabled: true
+tautulli_image: "ghcr.io/tautulli/tautulli:latest"
+
+kometa_enabled: true
+
+kometa_image: "ghcr.io/kometa-team/kometa:nightly"
+# Kometa schedule
+kometa_timer_calendar: "*-*-* 03:30:00"
+

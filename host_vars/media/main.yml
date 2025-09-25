@@ -1,0 +1,10 @@
+---
+# Host-specific values for the "media" host
+
+# Networking (DHCP by default)
+nm_interface_name: "eth0"
+static_network: false
+static_network_config:
+  address: "192.168.1.50/24"    # SAFE DEMO VALUE
+  gateway: "192.168.1.1"        # SAFE DEMO VALUE
+  dns: ["1.1.1.1","9.9.9.9"]

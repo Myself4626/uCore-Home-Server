@@ -1,0 +1,72 @@
+---
+- name: Ensure Plex config/data directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  loop:
+    - /srv/plex
+    - /srv/plex/config
+
+- name: Generate Plex Quadlet
+  containers.podman.podman_container:
+    name: plex
+    image: "{{ plex_image }}"
+    state: quadlet
+    quadlet_filename: "plex"
+    network: "{{ 'host' if plex_use_host_network | bool else omit }}"
+    publish: "{{ [] if plex_use_host_network | bool else plex_publish_all }}"
+    volumes:
+      - "/srv/plex/config:/config:Z"
+      - "/var/mnt/media:/media:ro"
+      - "/var/mnt/recorded:/recorded:Z"
+    device:
+      - "/dev/dri"
+    cap_drop: "{{ default_cap_drop }}"
+    cap_add: "{{ default_cap_add | default([]) }}"
+    security_opt: "{{ default_security_opt }}"
+    pids_limit: "{{ default_pids_limit }}"
+    ulimit: "{{ default_ulimits }}"
+    env:
+      TZ: "{{ timezone }}"
+    quadlet_options:
+      - "AutoUpdate=registry"
+      - "Pull=newer"
+      - |
+        [Install]
+        WantedBy=default.target
+  notify: systemd daemon-reload
+  register: plex_quadlet
+
+- name: Flush handlers (reload systemd for plex)
+  ansible.builtin.meta: flush_handlers
+
+- name: Enable and start plex.service (Quadlet)
+  ansible.builtin.service:
+    name: plex.service
+    enabled: true
+    state: started
+
+- name: Open firewall for Plex TCP
+  ansible.posix.firewalld:
+    port: "{{ item }}/tcp"
+    permanent: true
+    immediate: true
+    state: enabled
+  loop: "{{ plex_tcp_ports }}"
+
+- name: Open firewall for Plex UDP
+  ansible.posix.firewalld:
+    port: "{{ item }}/udp"
+    permanent: true
+    immediate: true
+    state: enabled
+  loop: "{{ plex_udp_ports }}"
+
+- name: Ensure podman-auto-update.timer is enabled (for AutoUpdate=registry)
+  ansible.builtin.service:
+    name: podman-auto-update.timer
+    enabled: "{{ enable_podman_auto_update_timer | bool }}"
+    state: "{{ 'started' if enable_podman_auto_update_timer | bool else 'stopped' }}"

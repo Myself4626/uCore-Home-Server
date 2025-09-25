@@ -1,0 +1,109 @@
+# Strong Kometa configuration (no Radarr/Sonarr, no webhooks)
+# Rendered to /srv/kometa/config/config.yml
+
+libraries:
+  Movies:
+    metadata_path:
+      - repo: "Kometa-Official/Kometa-Configs"
+        overlay_files:
+          - basic/ratings.yml
+          - overlays/versions.yml
+    schedule: hourly(3)
+    sync_mode: append
+    operations:
+      delete_below_minimum: false
+  TV Shows:
+    metadata_path:
+      - repo: "Kometa-Official/Kometa-Configs"
+        overlay_files:
+          - basic/ratings.yml
+          - overlays/versions.yml
+    schedule: hourly(4)
+    sync_mode: append
+    operations:
+      delete_below_minimum: false
+
+overlays:
+  rating_sources:
+    template_variables:
+      use_imdb: true
+      use_tmdb: true
+      use_rotten_tomatoes: true
+  format_badges:
+    template_variables:
+      use_4k: true
+      use_hdr: true
+      use_dolby_vision: true
+      use_atmos: true
+      use_dtsx: true
+
+collections:
+  4K:
+    smart_label: resolution.4k
+  HDR:
+    smart_label: any(hdr.exact=true,dolby_vision.exact=true)
+  Dolby Vision:
+    smart_label: dolby_vision.exact=true
+  Atmos:
+    smart_label: audio_profile.atmos
+  DTS:X:
+    smart_label: audio_profile.dts_x
+  Recently Added (30d):
+    smart_filter:
+      added: 30
+  Unwatched:
+    smart_filter:
+      watched: false
+  IMDb Top 250:
+    imdb_list: imdb://list/top250
+  TMDb Trending (Week):
+    tmdb_trending_weekly: true
+  Trakt Most Watched (Year):
+    trakt_watched_yearly: true
+  Spider-Verse:
+    plex_search:
+      title: regex:(Spider|Spider-Verse)
+  Trending TV (Week):
+    tmdb_trending_weekly_tv: true
+  Continuing Series:
+    plex_search:
+      any:
+        - episode.unwatched: true
+        - season.unfinished: true
+  Low IMDb Rating (<5.5):
+    plex_search:
+      any:
+        - imdb_rating.lt: 5.5
+
+plex:
+  url: "{{ sops_plex_url }}"
+  token: "{{ sops_plex_token }}"
+
+tmdb:
+{% if sops_tmdb_api_key is defined and sops_tmdb_api_key|length > 0 %}
+  apikey: "{{ sops_tmdb_api_key }}"
+{% else %}
+  apikey: ""
+{% endif %}
+
+trakt:
+{% if sops_trakt_client_id is defined and sops_trakt_client_id|length > 0 %}
+  client_id: "{{ sops_trakt_client_id }}"
+  client_secret: "{{ sops_trakt_client_secret | default('') }}"
+{% else %}
+  client_id: ""
+  client_secret: ""
+{% endif %}
+
+mdblist:
+{% if sops_mdblist_api_key is defined and sops_mdblist_api_key|length > 0 %}
+  apikey: "{{ sops_mdblist_api_key }}"
+{% else %}
+  apikey: ""
+{% endif %}
+
+settings:
+  cache: true
+  run_again_delay: 0
+  verify_ssl: true
+  timeout: 120

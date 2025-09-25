@@ -1,0 +1,16 @@
+[connection]
+id=static-media
+type=ethernet
+interface-name={{ nm_interface_name }}
+autoconnect=true
+
+[ipv4]
+method=manual
+address1={{ static_network_config.address }}
+gateway={{ static_network_config.gateway }}
+dns={{ static_network_config.dns | join(";") }}
+dns-search=
+may-fail=false
+
+[ipv6]
+method=ignore

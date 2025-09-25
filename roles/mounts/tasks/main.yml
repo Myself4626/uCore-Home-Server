@@ -1,0 +1,68 @@
+---
+- name: Ensure mountpoint directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  loop:
+    - "{{ recordings_mountpoint }}"
+    - "{{ cifs_mountpoint }}"
+    - "/etc/cred"
+
+- name: Assert required host vars are present
+  ansible.builtin.assert:
+    that:
+      - recordings_device is defined
+      - cifs_remote is defined
+    fail_msg: "Provide host-specific 'recordings_device' and 'cifs_remote' in host_vars/<host>.yml"
+
+- name: Assert CIFS SOPS credentials are present
+  ansible.builtin.assert:
+    that:
+      - sops_cifs_media is defined
+      - sops_cifs_media.username is defined
+      - sops_cifs_media.password is defined
+    fail_msg: "Missing sops_cifs_media.username/password in host_vars/<host>.sops.yaml (or not decrypted)."
+
+- name: Render CIFS credentials file from SOPS vars
+  ansible.builtin.copy:
+    dest: "{{ cifs_credentials_path }}"
+    owner: root
+    group: root
+    mode: '0600'
+    content: |
+      username={{ sops_cifs_media.username }}
+      password={{ sops_cifs_media.password }}
+      {% if sops_cifs_media.domain is defined and sops_cifs_media.domain | length > 0 %}
+      domain={{ sops_cifs_media.domain }}
+      {% endif %}
+  no_log: true
+
+- name: Mount local XFS recordings disk
+  ansible.posix.mount:
+    src: "{{ recordings_device }}"
+    path: "{{ recordings_mountpoint }}"
+    fstype: xfs
+    opts: "{{ recordings_opts }}"
+    state: mounted
+
+# For CIFS with automount, write to fstab but do not mount immediately (noauto + x-systemd.automount).
+- name: Ensure CIFS media entry exists in /etc/fstab
+  ansible.posix.mount:
+    src: "{{ cifs_remote }}"
+    path: "{{ cifs_mountpoint }}"
+    fstype: cifs
+    opts: "{{ cifs_opts }}"
+    state: present
+  notify: systemd daemon-reload
+
+- name: Flush handlers (reload systemd for automount)
+  ansible.builtin.meta: flush_handlers
+
+- name: Enable and start systemd automount for CIFS
+  ansible.builtin.service:
+    name: "{{ cifs_mountpoint | regex_replace('^/', '') | regex_replace('/', '-') }}.automount"
+    enabled: true
+    state: started

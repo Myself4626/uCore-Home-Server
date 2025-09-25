@@ -1,0 +1,10 @@
+[Unit]
+Description=Run Kometa nightly at 03:30
+
+[Timer]
+OnCalendar={{ kometa_timer_calendar }}
+Persistent=true
+Unit=kometa.service
+
+[Install]
+WantedBy=timers.target

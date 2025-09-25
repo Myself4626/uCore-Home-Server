@@ -1,0 +1,9 @@
+---
+recordings_mountpoint: "/var/mnt/recorded"
+recordings_opts: "defaults,relatime,nodiratime"
+
+cifs_mountpoint: "/var/mnt/media"
+cifs_credentials_path: "/etc/cred/smb-media"
+cifs_opts_base: "credentials={{ cifs_credentials_path }},context=system_u:object_r:container_file_t:s0,_netdev,vers=3.1.1,nofail"
+cifs_opts_automount: "x-systemd.automount,noauto,x-systemd.idle-timeout=60s,x-systemd.mount-timeout=10s,timeout=10"
+cifs_opts: "{{ cifs_opts_base }},{{ cifs_opts_automount }}"

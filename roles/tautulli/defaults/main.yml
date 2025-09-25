@@ -1,0 +1,11 @@
+---
+tautulli_image: "ghcr.io/tautulli/tautulli:latest"
+tautulli_port: "8181"
+
+default_cap_drop: ["ALL"]
+default_cap_add: []
+default_security_opt: ["no-new-privileges=true"]
+default_pids_limit: 0
+default_ulimits: ["nofile=131072:131072"]
+
+enable_podman_auto_update_timer: true

@@ -1,0 +1,8 @@
+plex_image: "docker.io/plexinc/pms-docker:latest"
+
+# Plex host networking toggle for this host only
+plex_use_host_network: false
+
+# Plex ports
+plex_tcp_ports: ["32400", "32469"]
+plex_udp_ports: ["1900", "5353", "32410", "32411", "32412", "32413", "32414"]

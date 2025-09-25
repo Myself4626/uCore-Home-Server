@@ -1,0 +1,15 @@
+---
+
+# Storage devices
+recordings_device: "/dev/disk/by-uuid/e4c56e18-907a-4a12-a049-577e88a850e5"
+recordings_mountpoint: "/var/mnt/recorded"
+recordings_opts: "defaults,relatime,nodiratime"
+
+# Mountpoints & CIFS options (host-specific device/remote live in host_vars)
+cifs_remote: "//172.19.0.100/storage/storage/media"
+cifs_mountpoint: "/var/mnt/media"
+cifs_credentials_path: "/etc/cred/smb-media"
+# SELinux-friendly context + automount/timeouts
+cifs_opts_base: "credentials={{ cifs_credentials_path }},context=system_u:object_r:container_file_t:s0,_netdev,vers=3.1.1,nofail"
+cifs_opts_automount: "x-systemd.automount,noauto,x-systemd.idle-timeout=60s,x-systemd.mount-timeout=10s,timeout=10"
+cifs_opts: "{{ cifs_opts_base }},{{ cifs_opts_automount }}"

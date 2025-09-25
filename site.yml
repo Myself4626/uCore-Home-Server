@@ -1,0 +1,35 @@
+---
+- name: Configure uBlue uCore-HCI media host
+  hosts: media
+  become: true
+  gather_facts: true
+
+  roles:
+    - role: system_basics
+      tags:
+        - setup
+
+    - role: mounts
+      tags:
+        - setup
+
+    - role: plex
+      when: plex_enabled | default(false) | bool
+      tags: 
+        - plex
+        - media
+        - containers
+
+    - role: tautulli
+      when: tautulli_enabled | default(false) | bool
+      tags:
+        - tautulli
+        - media
+        - containers
+
+    - role: kometa
+      when: kometa_enabled | default(false) | bool
+      tags:
+        - kometa
+        - media
+        - containers

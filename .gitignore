@@ -1,0 +1,15 @@
+# Ansible
+*.retry
+*.pyc
+__pycache__/
+.cache/
+# SOPS/keys
+*.age
+*.key
+secrets/
+# macOS
+.DS_Store
+# Local overrides (do not commit plaintext secrets)
+group_vars/*.sops.plain.yaml
+
+*.zip
