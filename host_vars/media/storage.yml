@@ -1,7 +1,7 @@
 ---
 
 # Storage devices
-recordings_device: "/dev/disk/by-uuid/5ef72602-2c51-45e8-8f6d-abbc0615d4f1"
+recordings_device: "/dev/disk/by-uuid/d44033c0-d9e6-42a9-85ad-79341d5a8543"
 recordings_mountpoint: "/var/mnt/recorded"
 recordings_opts: "defaults,relatime,nodiratime"
 
