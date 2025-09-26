@@ -58,8 +58,10 @@
     state: present
   notify: systemd daemon-reload
 
-- name: Flush handlers (reload systemd for automount)
-  ansible.builtin.meta: flush_handlers
+# Always reload to run systemd-fstab-generator, even if fstab line was already present
+- name: Reload systemd to pick up fstab changes
+  ansible.builtin.systemd:
+    daemon_reload: true
 
 - name: Enable and start systemd automount for CIFS
   ansible.builtin.service:
